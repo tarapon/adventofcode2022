@@ -74,7 +74,7 @@ end
 
 g = Game.new
 
-File.readlines('day2/input.txt').map do |line|
+File.readlines('day2/input.txt').each do |line|
   move_a, move_b = line.split(' ')
   g.play(move_a, move_b)
 end
