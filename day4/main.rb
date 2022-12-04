@@ -13,16 +13,7 @@ def to_ranges(line)
     .map { |r| (r[0].to_i..r[1].to_i) }
 end
 
-res = File.readlines('day4/input.txt').map do |line|
-  a, b = to_ranges(line)
-  include?(a, b)
-end
+ranges = File.readlines('day4/input.txt').map { |line| to_ranges(line) }
 
-puts "a: ", res.count(true)
-
-res = File.readlines('day4/input.txt').map do |line|
-  a, b = to_ranges(line)
-  overlaps?(a, b)
-end
-
-puts "b: ", res.count(true)
+puts "a: ", ranges.map { |a, b| include?(a, b)  }.count(true)
+puts "b: ", ranges.map { |a, b| overlaps?(a, b)  }.count(true)
