@@ -1,9 +1,10 @@
 msg = File.readlines('day6/input.txt').join.strip
 
-M_SIZE = 4
-
-start_index = (M_SIZE..msg.size).find do |i|
-  msg[i - M_SIZE..i - 1].split('').uniq.size == M_SIZE
+def find_packet_start(msg, n)
+  (n..msg.size).find do |i|
+    msg[i - n..i - 1].split('').uniq.size == n
+  end
 end
 
-puts "a: ", start_index
+puts "a: ", find_packet_start(msg, 4)
+puts "b: ", find_packet_start(msg, 14)
