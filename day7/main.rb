@@ -21,16 +21,16 @@ class ElfDir < ElfFile
     @children = []
   end
 
-  def add_child(child)
-    @children << child
+  def <<(child)
+    children << child
   end
 
-  def get_child(name)
-    children.find { |child| child.name == name } || raise("No such file: #{name}")
+  def [](name)
+    children.find { |child| child.name == name }
   end
 
   def size
-    @children.map(&:size).sum
+    children.map(&:size).sum
   end
 
   def dir?
@@ -58,11 +58,11 @@ stack = File.readlines('day7/input.txt').inject([]) do |stack, line|
   in ['$', 'cd', '..']
     stack.pop
   in ['$', 'cd', dir]
-    stack << stack.last.get_child(dir)
+    stack << stack.last[dir]
   in ['dir', name]
-    stack.last.add_child(ElfDir.new(name))
+    stack.last << ElfDir.new(name)
   in [size, name]
-    stack.last.add_child(ElfFile.new(name, size.to_i))
+    stack.last << ElfFile.new(name, size.to_i)
   end
 
   stack
