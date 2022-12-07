@@ -49,30 +49,23 @@ class ElfDir < ElfFile
   end
 end
 
-stack = [ElfDir.new('/')]
-
-File.readlines('day7/input.txt')[1..].each do |line|
-  next if line.match(%r{^\$ ls})
-
-  if line.match(%r{^\$ cd \.\.})
+stack = File.readlines('day7/input.txt').inject([]) do |stack, line|
+  case line.strip.split(' ')
+  in ['$', 'ls']
+    stack
+  in ['$', 'cd', '/']
+    stack << ElfDir.new('/')
+  in ['$', 'cd', '..']
     stack.pop
-    next
+  in ['$', 'cd', dir]
+    stack << stack.last.get_child(dir)
+  in ['dir', name]
+    stack.last.add_child(ElfDir.new(name))
+  in [size, name]
+    stack.last.add_child(ElfFile.new(name, size.to_i))
   end
 
-  if (m = line.match(%r{^\$ cd (.+)}))
-    stack.push(stack.last.get_child(m[1]))
-    next
-  end
-
-  if (m = line.match(%r{^dir (.+)}))
-    stack.last.add_child(ElfDir.new(m[1]))
-    next
-  end
-
-  if (m = line.match(%r{(\d+) (.+)}))
-    stack.last.add_child(ElfFile.new(m[2], m[1].to_i))
-    next
-  end
+  stack
 end
 
 root = stack.first
