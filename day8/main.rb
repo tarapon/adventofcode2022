@@ -36,6 +36,10 @@ class Matrix
     Matrix.new((0...n).map { |i| row(i).zip(m.row(i)).map { |a,b| a + b } })
   end
 
+  def * (m)
+    Matrix.new((0...n).map { |i| row(i).zip(m.row(i)).map { |a,b| a * b } })
+  end
+
   def to_s
     @matrix.inspect
   end
@@ -49,7 +53,7 @@ forest = File.readlines('day8/input.txt').map do |line|
   line.strip.chars.map(&:to_i)
 end
 
-def hidden(row)
+def weights_a(row)
   max = -1
   row.map do |x|
     if x > max
@@ -61,11 +65,23 @@ def hidden(row)
   end
 end
 
-forest = Matrix.new(forest)
+def weights_b(row)
+  row.each_with_index.map do |x, i|
+    i - (row[...i].rindex { |y| y >= x } || 0)
+  end
+end
 
-a = Matrix.new( forest.rows.map { |r| hidden(r) } )
-b = Matrix.new( forest.rows.map { |r| hidden(r.reverse).reverse } )
-c = Matrix.new( forest.columns.map { |r| hidden(r) } ).transpose
-d = Matrix.new( forest.columns.map { |r| hidden(r.reverse).reverse } ).transpose
+m = Matrix.new(forest)
 
-puts "a=", (a + b + c + d).rows.map { |r| r.count { |e| e.positive? } }.sum
+def compute(m, row_fn, agg_fn)
+  a = Matrix.new( m.rows.map { |r| row_fn.call(r) } )
+  b = Matrix.new( m.rows.map { |r| row_fn.call(r.reverse).reverse } )
+  c = Matrix.new( m.columns.map { |r| row_fn.call(r) } ).transpose
+  d = Matrix.new( m.columns.map { |r| row_fn.call(r.reverse).reverse } ).transpose
+
+  [a, b, c, d].reduce(&agg_fn)
+end
+
+puts "a=", compute(m, method(:weights_a), :+).rows.map { |r| r.count { |e| e > 0 } }.sum
+
+puts "b=", compute(m, method(:weights_b), :*).rows.map { |r| r.max }.max
