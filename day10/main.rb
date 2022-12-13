@@ -28,3 +28,18 @@ result = cpu.each_with_index.map do |x, i|
 end
 
 puts "a: #{result.sum}"
+
+puts "b:"
+
+cpu.each_with_index.map do |x, i|
+  puts if i % 40 == 0
+
+  if (x-1..x+1).include?(i % 40)
+    print "\u001B[41m"
+    print '#'
+  else
+    print "\u001B[40m"
+    print '.'
+  end
+end
+
