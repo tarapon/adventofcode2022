@@ -27,11 +27,16 @@ class Integer
   end
 end
 
-puts [3] == 3
+packets = File.read('day13/input.txt').split(/\n+/).map { |exp| eval(exp) }
 
-pairs = File.read('day13/input.txt').split("\n\n").map do |pair|
-  a, b = pair.split("\n")
-  [eval(a), eval(b)]
-end
-
+pairs = packets.each_slice(2).to_a
 puts "a=", pairs.each_with_index.map { |(a, b), i| i + 1 if a <= b }.compact.sum
+
+DIVIDER_1 = [[2]]
+DIVIDER_2 = [[6]]
+
+packets << DIVIDER_1
+packets << DIVIDER_2
+packets.sort!
+
+puts "b=", (packets.index(DIVIDER_1) + 1) * (packets.index(DIVIDER_2) + 1)
