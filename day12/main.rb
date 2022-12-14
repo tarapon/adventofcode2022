@@ -4,7 +4,6 @@ class Vertex
   def initialize(code, pos)
     @code = code
     @weight = Float::INFINITY
-    @visited = false
     @src = false
     @dst = false
     @pos = pos
@@ -31,14 +30,6 @@ class Vertex
     @dst
   end
 
-  def visit!
-    @visited = true
-  end
-
-  def visited?
-    @visited
-  end
-
   def update_weight(weight)
     @weight = weight if weight < @weight
   end
@@ -60,16 +51,18 @@ data = File.readlines('day12/input.txt').each_with_index.map do |line, i|
   line.strip.chars.each_with_index.map { |c, j| Vertex.new(c, [i, j]) }
 end
 
-until data.flatten.all?(&:visited?)
-  cur = data.flatten.filter { |v| !v.visited? }.min_by(&:weight)
-  cur.visit!
-  neighbors = data.flatten.filter { |v| cur.neighbor?(v) }
+vertexes = data.flatten
+unvisited = vertexes.dup
+
+until unvisited.empty?
+  cur = unvisited.min_by(&:weight)
+  unvisited.delete(cur)
+
+  neighbors = vertexes.filter { |v| cur.neighbor?(v) }
   neighbors.each do |v|
     v.update_weight(cur.weight + 1)
   end
 end
 
-data.each { |r| puts r.inspect }
-
-puts "a=", data.flatten.find(&:src?).weight
-puts "b=", data.flatten.filter(&:bottom?).min_by(&:weight).weight
+puts "a=", vertexes.find(&:src?).weight
+puts "b=", vertexes.filter(&:bottom?).min_by(&:weight).weight
