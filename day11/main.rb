@@ -1,5 +1,3 @@
-input = File.read('day11/input.txt').split("\n\n")
-
 class Expr
   attr_reader :old
 
@@ -7,14 +5,14 @@ class Expr
     @expr = expr
   end
 
-  def call(val)
+  def call(val, relief, cap)
     @old = val
-    (instance_eval(@expr) / 3.0).floor
+    (instance_eval(@expr) / relief.to_f).floor % cap
   end
 end
 
 class Monkey
-  attr_reader :items, :inspected_count
+  attr_reader :items, :inspected_count, :divider
 
   def initialize(expr, divider, if_true, if_false)
     @items = []
@@ -29,9 +27,11 @@ class Monkey
     @items.concat(items)
   end
 
-  def play(monkeys)
+  def play(monkeys, relief:)
+    cap = monkeys.map(&:divider).reduce(:*)
+
     until @items.empty?
-      item = @expr.call(@items.shift)
+      item = @expr.call(@items.shift, relief, cap)
       if item % @divider == 0
         monkeys[@if_true].add_item(item)
       else
@@ -55,10 +55,19 @@ def parse(input)
   end
 end
 
-monkeys = input.map { |i| parse(i) }
+def simulate(n, relief:)
+  input = File.read('day11/input.txt').split("\n\n")
+  monkeys = input.map { |i| parse(i) }
 
-20.times do
-  monkeys.each { |m| m.play(monkeys) }
+  n.times do
+    monkeys.each { |m| m.play(monkeys, relief: relief) }
+  end
+
+  monkeys
 end
 
+monkeys = simulate(20, relief: 3)
 puts "a=", monkeys.map(&:inspected_count).max(2).reduce(:*)
+
+monkeys = simulate(10000, relief: 1)
+puts "b=", monkeys.map(&:inspected_count).max(2).reduce(:*)
