@@ -10,19 +10,21 @@ class Vertex
     @pos = pos
 
     if code == 'S'
-      @weight = 0
       @code = 'a'
       @src = true
     elsif code == 'E'
+      @weight = 0
       @code = 'z'
       @dst = true
-    else
-      @code = code
     end
   end
 
   def src?
     @src
+  end
+
+  def bottom?
+    code == 'a'
   end
 
   def dst?
@@ -42,7 +44,7 @@ class Vertex
   end
 
   def neighbor?(v)
-    (pos[0] - v.pos[0]).abs + (pos[1] - v.pos[1]).abs == 1 && v.code.ord <= code.ord + 1
+    (pos[0] - v.pos[0]).abs + (pos[1] - v.pos[1]).abs == 1 && (v.code.ord >= code.ord - 1)
   end
 
   def to_s
@@ -67,4 +69,7 @@ until data.flatten.all?(&:visited?)
   end
 end
 
-puts "a=", data.flatten.find(&:dst?).weight
+data.each { |r| puts r.inspect }
+
+puts "a=", data.flatten.find(&:src?).weight
+puts "b=", data.flatten.filter(&:bottom?).min_by(&:weight).weight
