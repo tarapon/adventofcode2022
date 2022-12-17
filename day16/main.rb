@@ -39,10 +39,11 @@ end
 
 def visit_score(passes, idx, time_left, visited = {})
   scores = passes[idx].map do |ss, length|
-    if visited[ss] || length > time_left
+    t = length + 1
+
+    if visited[ss] || t >= time_left
       time_left * score(visited)
     else
-      t = length + 1
       t * score(visited) + visit_score(passes, ss, time_left - t, visited.dup.merge(ss => GRAPH[ss]))
     end
   end
