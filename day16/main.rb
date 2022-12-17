@@ -29,7 +29,7 @@ def compute_passes(idx)
     end
   end
 
-  visited.reject! { |_, v| v == 0 }
+  visited.reject! { |k, v| v == 0 || GRAPH[k].rate == 0 }
   visited
 end
 
@@ -53,5 +53,4 @@ end
 
 all_passes = GRAPH.keys.map { |k| [k, compute_passes(k)] }.to_h
 
-visited = GRAPH.filter { |_, v| v.rate == 0 }
-puts "a=", visit_score(all_passes, 'AA', 30, visited)
+puts "a=", visit_score(all_passes, 'AA', 30)
