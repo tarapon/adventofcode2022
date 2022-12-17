@@ -1,4 +1,4 @@
-class Matrix
+class Cave
   attr_reader :units
 
   def initialize(min_x, max_x, min_y, max_y)
@@ -6,6 +6,8 @@ class Matrix
     @max_x = max_x
     @min_y = min_y
     @max_y = max_y
+    @drop_x = 500
+    @drop_y = 0
 
     @data = (0..(max_y - min_y)).map { ['.'] * (max_x - min_x + 1) }
     @units = 0
@@ -19,12 +21,6 @@ class Matrix
     end
   end
 
-  def set_drop(x, y)
-    @drop_x = x
-    @drop_y = y
-    set(x, y, '+')
-  end
-
   def print
     puts @data.map { |row| row.join }.join("\n")
   end
@@ -33,6 +29,8 @@ class Matrix
     @cx, @cy = [@drop_x, @drop_y]
 
     while true
+      return false if full?
+
       moved = false
       moves = [[@cx, @cy + 1], [@cx - 1, @cy + 1], [@cx + 1, @cy + 1]]
       moves.each do |x, y|
@@ -57,6 +55,10 @@ class Matrix
 
   private
 
+  def full?
+    get(@drop_x, @drop_y) == 'o'
+  end
+
   def out_of_bounds?(x, y)
     x < @min_x || x > @max_x || y < @min_y || y > @max_y
   end
@@ -78,10 +80,8 @@ min_x = input.map { |row| row.min_by { |x, _| x }.first }.min
 max_x = input.map { |row| row.max_by { |x, _| x }.first }.max
 max_y = input.map { |row| row.max_by { |_, y| y }.last }.max
 
-drop_x = 500
-
-m = Matrix.new(min_x, max_x, 0, max_y)
-m.set_drop(drop_x, 0)
+# ===== part a =====
+m = Cave.new(min_x, max_x, 0, max_y)
 
 input.each do |row|
   row.each_cons(2) do |(x1, y1), (x2, y2)|
@@ -93,3 +93,16 @@ while m.drop!; end
 
 puts "a=", m.units
 
+# ===== part b =====
+m = Cave.new(min_x - max_y, max_x + max_y, 0, max_y + 2)
+m.add_wall(min_x - max_y, max_y + 2, max_x + max_y, max_y + 2)
+
+input.each do |row|
+  row.each_cons(2) do |(x1, y1), (x2, y2)|
+    m.add_wall(x1, y1, x2, y2)
+  end
+end
+
+while m.drop!; end
+
+puts "b=", m.units
