@@ -1,5 +1,3 @@
-require 'set'
-
 class Vertex
   attr_reader :rate, :siblings
 
@@ -33,6 +31,12 @@ def compute_passes(idx)
   visited
 end
 
+def generate_permutations(set)
+  ((set.size / 2.0).ceil...set.size).inject([]) do |acc, i|
+    acc + set.permutation(i).to_a
+  end
+end
+
 def visit_score(passes, idx, time_left, visited = {})
   scores = passes[idx].map do |ss, length|
     t = length + 1
@@ -50,3 +54,16 @@ end
 all_passes = GRAPH.keys.map { |k| [k, compute_passes(k)] }.to_h
 
 puts "a=", visit_score(all_passes, 'AA', 30)
+
+valuable_vx = all_passes['AA'].keys
+
+scores = generate_permutations(valuable_vx).map do |a|
+  work_a = (valuable_vx - a).map { |k| [k, true] }.to_h
+  work_b = (a).map { |k| [k, true] }.to_h
+
+  visit_score(all_passes, 'AA', 26, work_b) + visit_score(all_passes, 'AA', 26, work_a)
+end
+
+puts "b=", scores.max
+
+
