@@ -33,22 +33,18 @@ def compute_passes(idx)
   visited
 end
 
-def score(vertexes)
-  vertexes.values.sum(&:rate)
-end
-
 def visit_score(passes, idx, time_left, visited = {})
   scores = passes[idx].map do |ss, length|
     t = length + 1
 
     if visited[ss] || t >= time_left
-      time_left * score(visited)
+      0
     else
-      t * score(visited) + visit_score(passes, ss, time_left - t, visited.dup.merge(ss => GRAPH[ss]))
+      visit_score(passes, ss, time_left - t, visited.dup.merge(ss => true))
     end
   end
 
-  scores.max
+  scores.max + time_left * GRAPH[idx].rate
 end
 
 all_passes = GRAPH.keys.map { |k| [k, compute_passes(k)] }.to_h
