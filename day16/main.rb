@@ -1,3 +1,5 @@
+require 'set'
+
 class Vertex
   attr_reader :rate, :siblings
 
@@ -7,10 +9,24 @@ class Vertex
   end
 end
 
+class Solution
+  attr_reader :score, :path
+  def initialize(score, path)
+    @score = score
+    @path = path
+  end
+
+  def +(other)
+    Solution.new(@score + other.score, path | other.path)
+  end
+end
+
 GRAPH = File.readlines('day16/input.txt').map do |line|
   matches = line.match(/Valve (.*) has flow rate=(\d+); tunnels? leads? to valves? (.*)/)
   [matches[1], Vertex.new(matches[2].to_i, matches[3].split(', '))]
 end.to_h
+
+BIT_MASK = GRAPH.select { |_, v| v.rate > 0 }.keys.sort.each_with_index.map { |key, i| [key, 1 << i] }.to_h
 
 def compute_passes(idx)
   visited = { idx => 0 }
@@ -31,37 +47,36 @@ def compute_passes(idx)
   visited
 end
 
-def generate_permutations(set)
-  ((set.size / 2.0).ceil...set.size).inject([]) do |acc, i|
-    acc + set.permutation(i).to_a
-  end
-end
-
 def visit_score(passes, idx, time_left, visited = {})
-  scores = passes[idx].map do |ss, length|
+  solutions = passes[idx].map do |ss, length|
     t = length + 1
 
     if visited[ss] || t >= time_left
-      0
+      Solution.new(0, 0)
     else
       visit_score(passes, ss, time_left - t, visited.dup.merge(ss => true))
     end
   end
 
-  scores.max + time_left * GRAPH[idx].rate
+  solutions.flatten.map { |s| s + Solution.new(time_left * GRAPH[idx].rate, BIT_MASK[idx] || 0) }
+end
+
+def best_score(solutions)
+  solutions.max_by(&:score).score
 end
 
 all_passes = GRAPH.keys.map { |k| [k, compute_passes(k)] }.to_h
 
-puts "a=", visit_score(all_passes, 'AA', 30)
+solutions = visit_score(all_passes, 'AA', 30)
 
-valuable_vx = all_passes['AA'].keys
+puts "a=", best_score(solutions)
 
-scores = generate_permutations(valuable_vx).map do |a|
-  work_a = (valuable_vx - a).map { |k| [k, true] }.to_h
-  work_b = (a).map { |k| [k, true] }.to_h
+solutions = visit_score(all_passes, 'AA', 26).sort {|a, b| b.score <=> a.score }
 
-  visit_score(all_passes, 'AA', 26, work_b) + visit_score(all_passes, 'AA', 26, work_a)
+puts solutions.size
+
+scores = solutions.each_with_index.map do |sa, i|
+  sa.score + (solutions.find { |sb| sa.path & sb.path == 0 }&.score || 0)
 end
 
 puts "b=", scores.max
