@@ -47,14 +47,14 @@ def compute_passes(idx)
   visited
 end
 
-def visit_score(passes, idx, time_left, visited = {})
+def visit_score(passes, idx, time_left, visited = 0)
   solutions = passes[idx].map do |ss, length|
     t = length + 1
 
-    if visited[ss] || t >= time_left
+    if (visited & BIT_MASK[ss]) > 0 || t >= time_left
       Solution.new(0, 0)
     else
-      visit_score(passes, ss, time_left - t, visited.dup.merge(ss => true))
+      visit_score(passes, ss, time_left - t, visited | BIT_MASK[ss])
     end
   end
 
@@ -73,9 +73,7 @@ puts "a=", best_score(solutions)
 
 solutions = visit_score(all_passes, 'AA', 26).sort {|a, b| b.score <=> a.score }
 
-puts solutions.size
-
-scores = solutions.each_with_index.map do |sa, i|
+scores = solutions.map do |sa|
   sa.score + (solutions.find { |sb| sa.path & sb.path == 0 }&.score || 0)
 end
 
